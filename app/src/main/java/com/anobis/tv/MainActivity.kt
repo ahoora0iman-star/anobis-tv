@@ -16,6 +16,8 @@ class MainActivity : Activity() {
     companion object {
         const val START_URL =
             "https://www.anobis.site/index.php?action_skin_change=yes&skin_name=smart"
+        const val TV_UA =
+            "Mozilla/5.0 (SMART-TV; Linux; Tizen 6.0) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/4.0 Chrome/76.0.3809.146 TV Safari/537.36"
         const val SEEK_SECONDS = 10
 
         // ناوبری با ریموت + کنترل ویدیو داخل صفحه
@@ -146,14 +148,19 @@ class MainActivity : Activity() {
             useWideViewPort = true
             loadWithOverviewMode = true
             mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            userAgentString = "$userAgentString AndroidTV"
+            userAgentString = TV_UA
         }
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         if (Build.VERSION.SDK_INT >= 26) webView.defaultFocusHighlightEnabled = false
 
+        // پوستهٔ smart را از قبل روی همهٔ نسخه‌های دامنه تنظیم می‌کند
         CookieManager.getInstance().apply {
             setAcceptCookie(true)
             setAcceptThirdPartyCookies(webView, true)
+            listOf("https://www.anobis.site", "https://anobis.site", "https://tv.anobis.site").forEach {
+                setCookie(it, "dle_skin=smart; path=/; max-age=31536000")
+            }
+            flush()
         }
 
         webView.webViewClient = object : WebViewClient() {
