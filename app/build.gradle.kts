@@ -9,10 +9,10 @@ android {
 
     defaultConfig {
         applicationId = "com.anobis.tv"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.2"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
