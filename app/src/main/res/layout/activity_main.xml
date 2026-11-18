@@ -17,4 +17,79 @@
         android:layout_height="match_parent"
         android:background="#000000"
         android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/osd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layoutDirection="ltr"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="48dp"
+        android:paddingEnd="48dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="28dp"
+        android:background="#B3000000"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/osd_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="40dp"
+            android:textColor="#FFFFFF"
+            android:textSize="26sp" />
+
+        <TextView
+            android:id="@+id/osd_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp" />
+
+        <ProgressBar
+            android:id="@+id/osd_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="8dp"
+            android:layout_weight="1"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:max="1000"
+            android:progressTint="@color/gold"
+            android:progressBackgroundTint="#66FFFFFF" />
+
+        <TextView
+            android:id="@+id/osd_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/splash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/splash_bg"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/splash_logo"
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo"
+            android:contentDescription="@string/app_name" />
+
+        <ProgressBar
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="40dp"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/gold" />
+    </LinearLayout>
 </FrameLayout>
