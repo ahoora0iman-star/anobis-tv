@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- آیکون مربعی/دایره‌ای برای لانچرها:
+     canvas 108dp × 108dp
+     لوگو 92×28dp centered — گوشه‌ها در شعاع 48dp < 54dp ایمن هستند -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/splash_bg" />
+        </shape>
+    </item>
+    <item
+        android:top="40dp"
+        android:bottom="40dp"
+        android:left="8dp"
+        android:right="8dp"
+        android:drawable="@drawable/logo" />
+</layer-list>
