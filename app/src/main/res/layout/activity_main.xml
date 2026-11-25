@@ -8,6 +8,7 @@
         android:id="@+id/webview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#141824"
         android:focusable="true"
         android:focusableInTouchMode="true" />
 
@@ -18,6 +19,7 @@
         android:background="#000000"
         android:visibility="gone" />
 
+    <!-- OSD پخش: فقط در حالت فول‌اسکرین ویدیو -->
     <LinearLayout
         android:id="@+id/osd"
         android:layout_width="match_parent"
@@ -69,6 +71,46 @@
             android:textSize="20sp" />
     </LinearLayout>
 
+    <!-- لودینگ داخل برنامه (هنگام کلیک/جابه‌جایی بین صفحات) -->
+    <FrameLayout
+        android:id="@+id/busy"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#59000000"
+        android:clickable="false"
+        android:focusable="false"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/busy_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:background="@drawable/loading_card"
+            android:paddingStart="56dp"
+            android:paddingEnd="56dp"
+            android:paddingTop="36dp"
+            android:paddingBottom="32dp">
+
+            <ProgressBar
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:indeterminate="true"
+                android:indeterminateTint="@color/gold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/loading"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- صفحهٔ شروع -->
     <LinearLayout
         android:id="@+id/splash"
         android:layout_width="match_parent"
@@ -85,11 +127,32 @@
             android:src="@drawable/logo"
             android:contentDescription="@string/app_name" />
 
-        <ProgressBar
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+        <TextView
+            android:id="@+id/splash_percent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
-            android:indeterminate="true"
-            android:indeterminateTint="@color/gold" />
+            android:text="0٪"
+            android:textColor="@color/gold"
+            android:textSize="34sp"
+            android:textStyle="bold" />
+
+        <ProgressBar
+            android:id="@+id/splash_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="340dp"
+            android:layout_height="10dp"
+            android:layout_marginTop="12dp"
+            android:max="100"
+            android:progress="0"
+            android:progressDrawable="@drawable/progress_drawable" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="@string/loading"
+            android:textColor="#8FA0BF"
+            android:textSize="20sp" />
     </LinearLayout>
 </FrameLayout>
