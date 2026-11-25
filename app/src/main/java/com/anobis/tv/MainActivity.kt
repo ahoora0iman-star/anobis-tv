@@ -38,11 +38,7 @@ class MainActivity : Activity() {
         // اگر لوگو را با پس‌زمینهٔ شفاف آپلود کردید، false کنید
         const val LOGO_HAS_WHITE_BG = true
 
-        // تلویزیون‌ها density=2 دارند، پس WebView سایت را در ۹۶۰px رندر می‌کند
-        // و همه‌چیز بزرگ می‌شود. عرض viewport با این نسبت از عرض واقعی محاسبه می‌شود.
-        // ۱.۰ = عرض کامل فیزیکی (خیلی ریز)، ۰.۵ = حالت قبلی (خیلی بزرگ)
-        const val VIEWPORT_WIDTH_RATIO = 0.75
-        const val PIN_VIEWPORT_TO_PHYSICAL_PX = true
+
 
         private const val PREFS = "anobis"
         private const val KEY_SKIN_OK = "skin_cookie_ok"
@@ -62,7 +58,7 @@ class MainActivity : Activity() {
   function busyOff(){ bridge('ready'); }
 
   var st = document.createElement('style');
-  st.textContent = ':focus{outline:4px solid #D9B98C !important;outline-offset:3px;border-radius:4px}';
+  st.textContent = ':focus{outline:6px solid #FFD580 !important;outline-offset:4px;border-radius:6px;box-shadow:0 0 0 2px rgba(255,213,128,0.35) !important}';
   (document.head || document.documentElement).appendChild(st);
 
   function area(e){ var r = e.getBoundingClientRect(); return r.width * r.height; }
@@ -307,7 +303,6 @@ class MainActivity : Activity() {
     private var busySeq = 0
     private var tickerRunning = false
     private var logoPulse: ObjectAnimator? = null
-    private var viewportAppliedFor: String? = null
 
     private val hideOsdTask = Runnable { osd.visibility = View.GONE }
     private val pollOsdTask = object : Runnable {
@@ -415,7 +410,6 @@ class MainActivity : Activity() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) = false
 
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
-                viewportAppliedFor = null
                 if (splashHidden) {
                     navigationStarted = true
                     pageCommitted = false
@@ -424,7 +418,6 @@ class MainActivity : Activity() {
                     // هر صفحهٔ واقعی جدید، درصد را از صفر دنبال می‌کند
                     realProgress = 0
                 }
-                applyViewport()
             }
 
             // اولین نقاشی صفحه: زودترین لحظه‌ای که کاربر محتوا را می‌بیند
@@ -432,7 +425,6 @@ class MainActivity : Activity() {
                 navigationStarted = false
                 pageCommitted = true
                 if (!isBootstrap(url)) contentReady = true
-                applyViewport()
                 startTicker()
                 // صفحه پس از اعمال viewport دوباره چیده می‌شود؛ اسپینر را تا
                 // پایان این چیدمان نگه می‌داریم تا فلش بزرگ‌نمایی دیده نشود.
@@ -445,7 +437,6 @@ class MainActivity : Activity() {
                     getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                         .putBoolean(KEY_SKIN_OK, true).apply()
                 } else {
-                    applyViewport()
                     view.evaluateJavascript(TV_JS, null)
                     contentReady = true
                 }
@@ -557,48 +548,6 @@ class MainActivity : Activity() {
     private fun isBootstrap(url: String?): Boolean =
         url != null && url.contains("action_skin_change")
 
-    /**
-     * تلویزیون‌ها density=2 دارند، بنابراین WebView عرض CSS را نصف عرض واقعی
-     * حساب می‌کند (1920 ÷ 2 = 960) و محتوا دو برابر بزرگ دیده می‌شود.
-     *
-     * این متد viewport را روی عرض واقعی پیکسل پین می‌کند تا ۱ CSS px = ۱ پیکسل
-     * دستگاه شود و سایت با همان مقیاسی که برای 1080p طراحی شده رندر شود.
-     */
-    private fun applyViewport(force: Boolean = false) {
-        if (!PIN_VIEWPORT_TO_PHYSICAL_PX) return
-        val url = webView.url ?: return
-        if (!force && viewportAppliedFor == url) return
-        viewportAppliedFor = url
-        val w = (resources.displayMetrics.widthPixels * VIEWPORT_WIDTH_RATIO).toInt()
-        val js = """
-            (function(){
-              var w = $w;
-              var head = document.head;
-              if (!head) return 'no-head';
-              // فقط width — اضافه‌کردن initial-scale با آن تضاد دارد و
-              // loadWithOverviewMode خودش برای «جا شدن» مقیاس را تنظیم می‌کند.
-              var want = 'width=' + w;
-              var m = document.querySelector('meta[name=viewport]');
-              var existed = !!m;
-              if (!m) {
-                m = document.createElement('meta');
-                m.setAttribute('name', 'viewport');
-                head.appendChild(m);
-              }
-              var cur = m.getAttribute('content') || '';
-              if (cur.indexOf('width=' + w) === -1) {
-                m.setAttribute('content', want);
-                if (existed) {
-                  // سایت متای خودش را داشت؛ مرورگر باید با عرض جدید دوباره layout کند
-                  return 'updated';
-                }
-                return 'added';
-              }
-              return 'ok';
-            })()
-        """.trimIndent()
-        webView.evaluateJavascript(js, null)
-    }
 
     private fun startTicker() {
         if (splashHidden || tickerRunning) return
