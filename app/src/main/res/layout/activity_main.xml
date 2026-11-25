@@ -76,38 +76,19 @@
         android:id="@+id/busy"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#59000000"
+        android:background="#C0000000"
         android:clickable="false"
         android:focusable="false"
         android:visibility="gone">
 
-        <LinearLayout
+        <!-- فقط دایرهٔ چرخان؛ بدون کارت و بدون متن تا دید کاربر را نبندد -->
+        <ProgressBar
             android:id="@+id/busy_card"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
             android:layout_gravity="center"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:background="@drawable/loading_card"
-            android:paddingStart="56dp"
-            android:paddingEnd="56dp"
-            android:paddingTop="36dp"
-            android:paddingBottom="32dp">
-
-            <ProgressBar
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:indeterminate="true"
-                android:indeterminateTint="@color/gold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/loading"
-                android:textColor="#FFFFFF"
-                android:textSize="22sp" />
-        </LinearLayout>
+            android:indeterminate="true"
+            android:indeterminateTint="@color/gold" />
     </FrameLayout>
 
     <!-- صفحهٔ شروع -->

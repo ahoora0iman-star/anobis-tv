@@ -39,7 +39,9 @@ class MainActivity : Activity() {
         const val LOGO_HAS_WHITE_BG = true
 
         // تلویزیون‌ها density=2 دارند، پس WebView سایت را در ۹۶۰px رندر می‌کند
-        // و همه‌چیز بزرگ می‌شود. با true، عرض viewport روی عرض واقعی پیکسل پین می‌شود.
+        // و همه‌چیز بزرگ می‌شود. عرض viewport با این نسبت از عرض واقعی محاسبه می‌شود.
+        // ۱.۰ = عرض کامل فیزیکی (خیلی ریز)، ۰.۵ = حالت قبلی (خیلی بزرگ)
+        const val VIEWPORT_WIDTH_RATIO = 0.75
         const val PIN_VIEWPORT_TO_PHYSICAL_PX = true
 
         private const val PREFS = "anobis"
@@ -305,7 +307,7 @@ class MainActivity : Activity() {
     private var busySeq = 0
     private var tickerRunning = false
     private var logoPulse: ObjectAnimator? = null
-    private var cardPulse: ObjectAnimator? = null
+    private var viewportAppliedFor: String? = null
 
     private val hideOsdTask = Runnable { osd.visibility = View.GONE }
     private val pollOsdTask = object : Runnable {
@@ -413,6 +415,7 @@ class MainActivity : Activity() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) = false
 
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+                viewportAppliedFor = null
                 if (splashHidden) {
                     navigationStarted = true
                     pageCommitted = false
@@ -428,10 +431,12 @@ class MainActivity : Activity() {
             override fun onPageCommitVisible(view: WebView, url: String) {
                 navigationStarted = false
                 pageCommitted = true
-                hideBusyNow()
                 if (!isBootstrap(url)) contentReady = true
                 applyViewport()
                 startTicker()
+                // صفحه پس از اعمال viewport دوباره چیده می‌شود؛ اسپینر را تا
+                // پایان این چیدمان نگه می‌داریم تا فلش بزرگ‌نمایی دیده نشود.
+                handler.postDelayed({ hideBusyNow() }, 220)
             }
 
             override fun onPageFinished(view: WebView, url: String) {
@@ -446,7 +451,9 @@ class MainActivity : Activity() {
                 }
                 navigationStarted = false
                 pageCommitted = true
-                hideBusyNow()
+                // همان دلیلی که در onPageCommitVisible هست: تا چیدمان دوبارهٔ
+                // صفحه تمام نشود اسپینر را برنمی‌داریم.
+                handler.postDelayed({ hideBusyNow() }, 220)
                 startTicker()
                 if (customView == null) view.requestFocus()
             }
@@ -544,12 +551,6 @@ class MainActivity : Activity() {
             repeatMode = ObjectAnimator.REVERSE
             start()
         }
-        // نبض کارت لودینگ داخل برنامه
-        cardPulse = ObjectAnimator.ofFloat(busyCard, View.ALPHA, 1f, 0.78f).apply {
-            duration = 900
-            repeatCount = ObjectAnimator.INFINITE
-            repeatMode = ObjectAnimator.REVERSE
-        }
     }
 
     /** صفحهٔ تغییر اسکین یک ریدایرکت واسط است؛ نباید لودینگ اصلی را تمام کند. */
@@ -563,9 +564,12 @@ class MainActivity : Activity() {
      * این متد viewport را روی عرض واقعی پیکسل پین می‌کند تا ۱ CSS px = ۱ پیکسل
      * دستگاه شود و سایت با همان مقیاسی که برای 1080p طراحی شده رندر شود.
      */
-    private fun applyViewport() {
+    private fun applyViewport(force: Boolean = false) {
         if (!PIN_VIEWPORT_TO_PHYSICAL_PX) return
-        val w = resources.displayMetrics.widthPixels
+        val url = webView.url ?: return
+        if (!force && viewportAppliedFor == url) return
+        viewportAppliedFor = url
+        val w = (resources.displayMetrics.widthPixels * VIEWPORT_WIDTH_RATIO).toInt()
         val js = """
             (function(){
               var w = $w;
@@ -622,12 +626,8 @@ class MainActivity : Activity() {
     private fun armBusy() {
         if (!splashHidden || customView != null) return
         pageCommitted = false
-        val seq = ++busySeq
-        // کمی تأخیر تا ناوبری‌های سریع باعث پرش تصویر نشوند
-        handler.postDelayed({
-            if (seq != busySeq || pageCommitted || customView != null) return@postDelayed
-            showBusyNow()
-        }, 260)
+        busySeq++
+        showBusyNow()
     }
 
     private fun showBusyNow() {
@@ -635,8 +635,7 @@ class MainActivity : Activity() {
         busy.animate().cancel()
         busy.visibility = View.VISIBLE
         busy.alpha = 0f
-        busy.animate().alpha(1f).setDuration(160).start()
-        cardPulse?.start()
+        busy.animate().alpha(1f).setDuration(140).start()
         handler.removeCallbacks(busyGuard)
         handler.postDelayed(busyGuard, 20000)
     }
@@ -646,12 +645,8 @@ class MainActivity : Activity() {
         handler.removeCallbacks(busyGuard)
         if (busy.visibility != View.VISIBLE) return
         busy.animate().cancel()
-        busy.animate().alpha(0f).setDuration(140)
-            .withEndAction {
-                busy.visibility = View.GONE
-                cardPulse?.cancel()
-                busyCard.alpha = 1f
-            }.start()
+        busy.animate().alpha(0f).setDuration(120)
+            .withEndAction { busy.visibility = View.GONE }.start()
     }
 
     /**
@@ -664,14 +659,11 @@ class MainActivity : Activity() {
             runOnUiThread {
                 if (!splashHidden || customView != null) return@runOnUiThread
                 val seq = ++busySeq
+                showBusyNow()
+                // اگر تا ۱.۲ ثانیه ناوبری واقعی شروع نشد، کلیک کار دیگری می‌کرد
                 handler.postDelayed({
-                    if (seq != busySeq) return@postDelayed
-                    showBusyNow()
-                }, 120)
-                // اگر تا ۱.۵ ثانیه ناوبری واقعی شروع نشد، یعنی کلیک کار دیگری می‌کرد
-                handler.postDelayed({
-                    if (seq == busySeq && !navigationStarted) hideBusyNow()
-                }, 1500)
+                    if (seq == busySeq && !navigationStarted && !pageCommitted) hideBusyNow()
+                }, 1200)
             }
         }
 
@@ -818,7 +810,6 @@ class MainActivity : Activity() {
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
         logoPulse?.cancel()
-        cardPulse?.cancel()
         webView.destroy()
         super.onDestroy()
     }
