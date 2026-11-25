@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- آیکون مربعی/دایره‌ای برای لانچرها:
-     canvas 108dp × 108dp
-     لوگو 92×28dp centered — گوشه‌ها در شعاع 48dp < 54dp ایمن هستند -->
+<!-- آیکون 108×108dp — لوگو 62×19dp در مرکز
+     corner distance = 32.4dp < safe radius 33dp (66dp safe zone spec)
+     با این margin در هر لانچر round/square/circle کراپ نمیشود -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
@@ -9,9 +9,9 @@
         </shape>
     </item>
     <item
-        android:top="40dp"
-        android:bottom="40dp"
-        android:left="8dp"
-        android:right="8dp"
+        android:top="44dp"
+        android:bottom="44dp"
+        android:left="23dp"
+        android:right="23dp"
         android:drawable="@drawable/logo" />
 </layer-list>
