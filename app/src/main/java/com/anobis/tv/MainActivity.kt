@@ -392,6 +392,8 @@ class MainActivity : Activity() {
             cacheMode = WebSettings.LOAD_DEFAULT
             userAgentString = TV_UA
         }
+        // scale=100 means 1.0x — no zoom-to-fit, no reflow flash
+        webView.setInitialScale(100)
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         if (Build.VERSION.SDK_INT >= 26) webView.defaultFocusHighlightEnabled = false
 
